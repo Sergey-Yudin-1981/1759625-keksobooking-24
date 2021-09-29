@@ -9,13 +9,13 @@ function randomInteger(min, max) {
 
 console.log('Случайное число: ' + randomInteger(1, 10));
 
-function randomInteger(min, max) {
+function randomIntegerRounding(min, max, rounding) {
   if ( max <= min) {
     return console.log('Максимальное значение должно быть больше минимального');
   }
   let rand = min + Math.random() * (max + 1 - min);
   //округляем указывая количество знаков после запятой
-  return rand.toFixed(3);
+  return rand.toFixed(rounding);
 }
 
-console.log('Случайное число: ' + randomInteger(10, 10));
+console.log('Случайное число: ' + randomIntegerRounding(10, 10, 3));
