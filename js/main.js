@@ -62,15 +62,15 @@ function createHotelObj(index) {
 
   let tempIndex = indexStr;
   if (indexStr.length === 1) {
-    tempIndex = '0' + indexStr;
+    tempIndex = `0${indexStr}`;
   }
 
   return {
     author: {
-      avatar: 'img/avatars/user' + tempIndex + '.png',
+      avatar: `img/avatars/user${tempIndex}.png`,
     },
     offer: {
-      title: 'Название ' + tempIndex,
+      title: `Название ${tempIndex}`,
       address: '56.750216, 60.153892',
       price: randomInteger(1, 5),
       type: templateObj.offer.type[randomInteger(0, 4)],
@@ -86,8 +86,8 @@ function createHotelObj(index) {
       lat: randomIntegerRounding(35.65000, 35.70000, 5),
       lng: randomIntegerRounding(139.70000, 139.80000, 5),
     },
-  }
-
+  };
+}
 
 const hotels = [];
 
