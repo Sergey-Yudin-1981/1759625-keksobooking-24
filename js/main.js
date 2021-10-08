@@ -1,8 +1,21 @@
+const Type = ['palace', 'flat', 'house', 'bungalow', 'hotel'];
+const Checkin = ['12:00','13:00','14:00'];
+const Features = ['wifi', 'dishwasher', 'parking', 'washer', 'elevator', 'conditioner'];
+const Photos = ['https://assets.htmlacademy.ru/content/intensive/javascript-1/keksobooking/duonguyen-8LrGtIxxa4w.jpg', 'https://assets.htmlacademy.ru/content/intensive/javascript-1/keksobooking/brandon-hoogenboom-SNxQGWxZQi0.jpg', 'https://assets.htmlacademy.ru/content/intensive/javascript-1/keksobooking/claire-rendall-b6kAwr1i0Iw.jpg'];
+const MinNumber = 1;
+const MaxNumber = 10;
+const MinPrice = 1000;
+const MaxPrice = 10000;
+const MinLat = 35.65000;
+const MaxLat = 35.70000;
+const MinLng = 139.70000;
+const MaxLng = 139.80000;
+const Round = 5;
+
 function randomInteger(min, max) {
   if (min<0 || max<0 || max <= min) {
     return null;
   }
-
   // случайное число от min до (max+1)
   const rand = min + Math.random() * (max + 1 - min);
   return Math.floor(rand);
@@ -23,7 +36,7 @@ randomIntegerRounding(1,10,3);
 
 function pickRandomFromArr(arr, count) {
   const resultArray = [];
-  for (let counter = 0; counter < count; counter += 1) {
+  for (let counter = 0; counter < count; counter ++) {
     const newElement = arr[randomInteger(0, arr.length - 1)];
     if (resultArray.includes(newElement)) {
       continue;
@@ -34,23 +47,14 @@ function pickRandomFromArr(arr, count) {
   return resultArray;
 }
 
-const type = ['palace', 'flat', 'house', 'bungalow', 'hotel'];
-const checkin = ['12:00','13:00','14:00'];
-const features = ['wifi', 'dishwasher', 'parking', 'washer', 'elevator', 'conditioner'];
-const photos = ['https://assets.htmlacademy.ru/content/intensive/javascript-1/keksobooking/duonguyen-8LrGtIxxa4w.jpg', 'https://assets.htmlacademy.ru/content/intensive/javascript-1/keksobooking/brandon-hoogenboom-SNxQGWxZQi0.jpg', 'https://assets.htmlacademy.ru/content/intensive/javascript-1/keksobooking/claire-rendall-b6kAwr1i0Iw.jpg'];
-const minNumber = 1;
-const maxNumber = 10;
-const minPrice = 1000;
-const maxPrice = 10000;
-
 function createHotelObj(index) {
   let tempIndex = index;
   if (index < 10) {
     tempIndex = `0${index}`;
   }
 
-  const lat = randomIntegerRounding(35.65000, 35.70000, 5);
-  const lng = randomIntegerRounding(139.70000, 139.80000, 5);
+  const Lat = randomIntegerRounding(MinLat, MaxLat, Round);
+  const Lng = randomIntegerRounding(MinLng, MaxLng, Round);
 
   return {
     author: {
@@ -58,31 +62,30 @@ function createHotelObj(index) {
     },
     offer: {
       title: `Название ${tempIndex}`,
-      address: `${lat}, ${lng}`,
-      price: randomInteger(minPrice, maxPrice),
-      type: type[randomInteger(0, type.length)],
-      rooms: randomInteger(minNumber, maxNumber),
-      guests: randomInteger(minNumber, maxNumber),
-      checkin: checkin[randomInteger(0, checkin.length)],
-      checkout: checkin[randomInteger(0, checkin.length)],
-      features: pickRandomFromArr(features, randomInteger(1, features.length)),
+      address: `${Lat}, ${Lng}`,
+      price: randomInteger(MinPrice, MaxPrice),
+      type: Type[randomInteger(0, Type.length)],
+      rooms: randomInteger(MinNumber, MaxNumber),
+      guests: randomInteger(MinNumber, MaxNumber),
+      checkin: Checkin[randomInteger(0, Checkin.length)],
+      checkout: Checkin[randomInteger(0, Checkin.length)],
+      features: pickRandomFromArr(Features, randomInteger(1, Features.length)),
       description: 'Находится в центер города. Удобно добираться любым транспортом до любого района города',
-      photos: pickRandomFromArr(photos, randomInteger(1, photos.length)),
+      photos: pickRandomFromArr(Photos, randomInteger(1, Photos.length)),
     },
     location: {
-      lat: lat,
-      lng: lng,
+      lat: Lat,
+      lng: Lng,
     },
   };
 }
 
-const hotels = [];
-
 function createHotelNumber(hotelNumber) {
-  for (let id = 1; id < (hotelNumber+1); id++) {
-    hotels.push(createHotelObj(id));
+  const Hotels = [];
+  for (let id = 1; id <= hotelNumber; id++) {
+    Hotels.push(createHotelObj(id));
   }
-  return (hotels);
+  return (Hotels);
 }
 
-createHotelNumber(12);
+createHotelNumber(10);
