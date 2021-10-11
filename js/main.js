@@ -1,16 +1,16 @@
-const Type = ['palace', 'flat', 'house', 'bungalow', 'hotel'];
-const Checkin = ['12:00','13:00','14:00'];
-const Features = ['wifi', 'dishwasher', 'parking', 'washer', 'elevator', 'conditioner'];
-const Photos = ['https://assets.htmlacademy.ru/content/intensive/javascript-1/keksobooking/duonguyen-8LrGtIxxa4w.jpg', 'https://assets.htmlacademy.ru/content/intensive/javascript-1/keksobooking/brandon-hoogenboom-SNxQGWxZQi0.jpg', 'https://assets.htmlacademy.ru/content/intensive/javascript-1/keksobooking/claire-rendall-b6kAwr1i0Iw.jpg'];
-const MinNumber = 1;
-const MaxNumber = 10;
-const MinPrice = 1000;
-const MaxPrice = 10000;
-const MinLat = 35.65000;
-const MaxLat = 35.70000;
-const MinLng = 139.70000;
-const MaxLng = 139.80000;
-const Round = 5;
+const TYPE = ['palace', 'flat', 'house', 'bungalow', 'hotel'];
+const CHECKIN = ['12:00','13:00','14:00'];
+const FEATURES = ['wifi', 'dishwasher', 'parking', 'washer', 'elevator', 'conditioner'];
+const PHOTOS = ['https://assets.htmlacademy.ru/content/intensive/javascript-1/keksobooking/duonguyen-8LrGtIxxa4w.jpg', 'https://assets.htmlacademy.ru/content/intensive/javascript-1/keksobooking/brandon-hoogenboom-SNxQGWxZQi0.jpg', 'https://assets.htmlacademy.ru/content/intensive/javascript-1/keksobooking/claire-rendall-b6kAwr1i0Iw.jpg'];
+const MINNUMBER = 1;
+const MAXNUMBER = 10;
+const MINPRICE = 1000;
+const MAXPRICE = 10000;
+const MINLAT = 35.65000;
+const MAXLAT = 35.70000;
+const MINLNG = 139.70000;
+const MAXLNG = 139.80000;
+const ROUND = 5;
 
 function randomInteger(min, max) {
   if (min<0 || max<0 || max <= min) {
@@ -53,8 +53,8 @@ function createHotelObj(index) {
     tempIndex = `0${index}`;
   }
 
-  const Lat = randomIntegerRounding(MinLat, MaxLat, Round);
-  const Lng = randomIntegerRounding(MinLng, MaxLng, Round);
+  const lat = randomIntegerRounding(MINLAT, MAXLAT, ROUND);
+  const lng = randomIntegerRounding(MINLNG, MAXLNG, ROUND);
 
   return {
     author: {
@@ -62,30 +62,30 @@ function createHotelObj(index) {
     },
     offer: {
       title: `Название ${tempIndex}`,
-      address: `${Lat}, ${Lng}`,
-      price: randomInteger(MinPrice, MaxPrice),
-      type: Type[randomInteger(0, Type.length)],
-      rooms: randomInteger(MinNumber, MaxNumber),
-      guests: randomInteger(MinNumber, MaxNumber),
-      checkin: Checkin[randomInteger(0, Checkin.length)],
-      checkout: Checkin[randomInteger(0, Checkin.length)],
-      features: pickRandomFromArr(Features, randomInteger(1, Features.length)),
+      address: `${lat}, ${lng}`,
+      price: randomInteger(MINPRICE, MAXPRICE),
+      type: TYPE[randomInteger(0, TYPE.length)],
+      rooms: randomInteger(MINNUMBER, MAXNUMBER),
+      guests: randomInteger(MINNUMBER, MAXNUMBER),
+      checkin: CHECKIN[randomInteger(0, CHECKIN.length)],
+      checkout: CHECKIN[randomInteger(0, CHECKIN.length)],
+      features: pickRandomFromArr(FEATURES, randomInteger(1, FEATURES.length)),
       description: 'Находится в центер города. Удобно добираться любым транспортом до любого района города',
-      photos: pickRandomFromArr(Photos, randomInteger(1, Photos.length)),
+      photos: pickRandomFromArr(PHOTOS, randomInteger(1, PHOTOS.length)),
     },
     location: {
-      lat: Lat,
-      lng: Lng,
+      lat: lat,
+      lng: lng,
     },
   };
 }
 
 function createHotelNumber(hotelNumber) {
-  const Hotels = [];
+  const hotels = [];
   for (let id = 1; id <= hotelNumber; id++) {
-    Hotels.push(createHotelObj(id));
+    hotels.push(createHotelObj(id));
   }
-  return (Hotels);
+  return (hotels);
 }
 
 createHotelNumber(10);
