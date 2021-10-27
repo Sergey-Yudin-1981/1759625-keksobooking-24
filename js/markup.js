@@ -1,23 +1,11 @@
+import {getRooms, getGuest} from './declensions.js';
+
 const typeBuilding = {
   flat: 'Квартира',
   bungalow: 'Бунгало',
   house: 'Дом',
   palace: 'Дворец',
   hotel: 'Отель',
-};
-
-const dictionary = {
-  rooms: {
-    1: 'комната',
-    2: 'комнаты',
-    3: 'комнаты',
-    4: 'комнаты',
-    5: 'комнат',
-  },
-  guests: {
-    1: 'гостя',
-    2: 'гостей',
-  },
 };
 
 function maleElement(tagName, className, text) {
@@ -31,73 +19,125 @@ function maleElement(tagName, className, text) {
   return element;
 }
 
-function createElement (product) {
-  const listItem = maleElement('article', 'popup');
+function fillHotelElement(product, templateId) {
+  if (!product || !templateId) {
+    return false;
+  }
+  const template = document.querySelector(templateId);
+  if (!template) {
+    return false;
+  }
+  const clonedContent = template.content.querySelector('.popup').cloneNode(true); //клонируем содержимое template (вложения)
 
-  const avatar = maleElement('img', 'popup__avatar');
-  avatar.src = product.author.avatar ? product.author.avatar : '/img/default-avatar.jpg';
-  listItem.appendChild(avatar);
-
-  const productTitle = product.offer.title ? product.offer.title : 'Без названия';
-  const title = maleElement('h3', 'popup__title', productTitle);
-  listItem.appendChild(title);
-
-  const productAddress = product.offer.address ? product.offer.address : 'Без адреса';
-  const add = maleElement('p', 'popup__text--address', productAddress);
-  listItem.appendChild(add);
-
-  const productPrice = product.offer.price ? `${product.offer.price} ₽/ночь` : 'Цена не указана';
-  const price = maleElement('p', 'popup__text--price', productPrice);
-  listItem.appendChild(price);
-
-  const productType = product.offer.type ?  typeBuilding[product.offer.type] : 'Нет данных';
-  const type = maleElement('h4', 'popup__type', productType);
-  listItem.appendChild(type);
-
-  let roomGuestsString = '';
-  if (product.offer.rooms && product.offer.guests) {
-    const roomsString = dictionary.rooms[product.offer.rooms] ? dictionary.rooms[product.offer.rooms] : dictionary.rooms['5'];
-    const guestsString = dictionary.guests[product.offer.guests] ? dictionary.guests[product.offer.guests] : dictionary.guests['2'];
-    roomGuestsString = `${product.offer.rooms} ${roomsString} для ${product.offer.guests} ${guestsString}`;
+  // Аватар
+  const avatarSrc = product.author.avatar;
+  const avatarNode = clonedContent.querySelector('.popup__avatar');
+  if (avatarSrc) {
+    avatarNode.src = avatarSrc;
   } else {
-    roomGuestsString = 'уточните данные по телефону';
+    avatarNode.remove();
   }
 
-  const roomsGuest = maleElement('p', 'popup__text--capacity', roomGuestsString);
-  listItem.appendChild(roomsGuest);
+  // Заголовок
+  const title = product.offer.title;
+  const titleNode = clonedContent.querySelector('.popup__title');
+  if (title) {
+    titleNode.innerText = title;
+  } else {
+    titleNode.remove();
+  }
 
-  const features = maleElement('ul', 'popup__features');
-  listItem.appendChild(features);
+  //адрес
+  const address = product.offer.address;
+  const addressNode = clonedContent.querySelector('.popup__text--address');
+  if (address) {
+    addressNode.innerText = address;
+  } else {
+    addressNode.remove();
+  }
+
+  //Стоимость проживания
+  const price = product.offer.price;
+  const priceNode = clonedContent.querySelector('.popup__text--price');
+  if (price) {
+    priceNode.innerHTML = `${price} <span>₽/ночь</span>`;
+  } else {
+    priceNode.remove();
+  }
+
+  //Тип жилья
+  const type = product.offer.type;
+  const typeNode = clonedContent.querySelector('.popup__type');
+  if (type) {
+    typeNode.innerText = typeBuilding[product.offer.type];
+  } else {
+    typeNode.remove();
+  }
+
+  //комнаты и гости
+  const rooms = product.offer.rooms;
+  const guests = product.offer.guests;
+  const roomsGuestsNode = clonedContent.querySelector('.popup__text--capacity');
+  if (rooms && guests) {
+    const roomsString = getRooms(product.offer.rooms);
+    const guestsString = getGuest(product.offer.guests);
+    roomsGuestsNode.innerText = `${product.offer.rooms} ${roomsString} для ${product.offer.guests} ${guestsString}`;
+  } else {
+    roomsGuestsNode.remove();
+  }
+
+  //Время заезда и выезда
+  const timeIn = product.offer.checkin;
+  const timeOut = product.offer.checkout;
+  const timeInOutNode = clonedContent.querySelector('.popup__text--time');
+  if (timeIn && timeOut) {
+    timeInOutNode.innerText = `Заезд после ${product.offer.checkin}, выезд до ${product.offer.checkout}`;
+  } else {
+    timeInOutNode.remove();
+  }
+
+  //удобства
+  const featuresNode = clonedContent.querySelector('.popup__features');
   if (product.offer.features && product.offer.features.length > 0) {
-    for (let j = 0; j < product.offer.features.length; j ++) {
-      const feature = maleElement('li', 'popup__feature');
-      feature.classList.add(`popup__feature--${product.offer.features[j]}`);
-      features.appendChild(feature);
-    }
+    const featuresFragment = document.createDocumentFragment();
+    product.offer.features.forEach((features) => {
+      const featuresListItem = clonedContent.querySelector(`.popup__feature--${features}`);
+      if (featuresListItem) {
+        featuresFragment.append(featuresListItem);
+      }
+    });
+    featuresNode.innerHTML = '';
+    featuresNode.append(featuresFragment);
   } else {
-    const feature = maleElement('li', '', 'нет плюшек');
-    features.appendChild(feature);
+    featuresNode.remove();
   }
 
-  const productDescription = product.offer.description ? product.offer.description : 'Нет описания';
-  const descript = maleElement('p', 'popup__description', productDescription);
-  listItem.appendChild(descript);
+  //описание
+  const descriptionNode = clonedContent.querySelector('.popup__description');
+  if (product.offer.description) {
+    descriptionNode.innerText = product.offer.description;
+  } else {
+    descriptionNode.remove();
+  }
 
-
-  const images = maleElement('div', 'popup__photos');
-  listItem.appendChild(images);
-  //
+  //фотографии
+  const photoNode = clonedContent.querySelector('.popup__photos');
+  photoNode.innerHTML = '';
   if (product.offer.photos && product.offer.photos.length > 0) {
-    for (let q = 0; q < product.offer.photos.length; q ++) {
+    product.offer.photos.forEach((photo) => {
       const img = maleElement('img', 'popup__photo');
-      img.src = product.offer.photos[q];
-      images.appendChild(img);
-    }
+      img.src = photo;
+      img.setAttribute('width', '45px');
+      img.setAttribute('height', '40px');
+      img.alt = 'Фотография жилья';
+      photoNode.appendChild(img);
+    });
   } else {
-    const img = maleElement('img', '', 'Нет фотографий');
-    images.appendChild(img);
+    photoNode.remove();
   }
-  return(listItem);
+
+  return clonedContent;
 }
 
-export {createElement};
+
+export {fillHotelElement};
