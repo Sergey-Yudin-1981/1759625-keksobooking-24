@@ -1,30 +1,17 @@
-function getRooms(rooms) {
-  let n = Math.abs(rooms);
+function getNoun(number, one, two, five) {
+  let n = Math.abs(number);
   n %= 100;
   if (n >= 5 && n <= 20) {
-    return 'комнат';
+    return five;
   }
   n %= 10;
   if (n === 1) {
-    return 'комната';
+    return one;
   }
   if (n >= 2 && n <= 4) {
-    return 'комнаты';
+    return two;
   }
-  return 'комнат';
+  return five;
 }
 
-function getGuest(guest) {
-  let m = Math.abs(guest);
-  m %= 100;
-  if (m >= 2) {
-    return 'гостей';
-  }
-  m %= 10;
-  if (m === 1) {
-    return 'гостя';
-  }
-  return 'гостей';
-}
-
-export {getRooms, getGuest};
+export {getNoun};

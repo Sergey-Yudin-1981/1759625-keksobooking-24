@@ -1,4 +1,4 @@
-import {getRooms, getGuest} from './declensions.js';
+import {getNoun} from './declensions.js';
 
 const typeBuilding = {
   flat: 'Квартира',
@@ -79,8 +79,8 @@ function fillHotelElement(product, templateId) {
   const guests = product.offer.guests;
   const roomsGuestsNode = clonedContent.querySelector('.popup__text--capacity');
   if (rooms && guests) {
-    const roomsString = getRooms(product.offer.rooms);
-    const guestsString = getGuest(product.offer.guests);
+    const roomsString = getNoun(product.offer.rooms, 'комната', 'комнаты', 'комнат');
+    const guestsString = getNoun(product.offer.guests, 'гостя', 'гостей', 'гостей');
     roomsGuestsNode.innerText = `${product.offer.rooms} ${roomsString} для ${product.offer.guests} ${guestsString}`;
   } else {
     roomsGuestsNode.remove();
