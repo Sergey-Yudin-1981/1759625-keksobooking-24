@@ -10,4 +10,5 @@ const cardItem = fillHotelElement(note[3], '#card');
 document.getElementById('map-canvas').append(cardItem);
 
 const data = ['.ad-form', '.map__filters'];
+disableForm(data, true);
 disableForm(data, false);
