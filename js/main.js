@@ -33,8 +33,6 @@ headingNameInput.addEventListener('input', () => {
 });
 
 //Проверка ввода цены
-//const MIN_PRICE_LENGTH = 0;
-const MAX_PRICE_LENGTH = 1000000;
 const priceNameInput = document.getElementById('price');
 const typeNameInput = document.getElementById('type');
 
@@ -46,7 +44,7 @@ const priceMinTable = {
   palace: 10000,
 };
 
-let priceNameInputMinValue = 0;
+let priceNameInputMinValue = priceNameInput.min;
 
 function handleTypeChange() {
   if (!priceNameInput || !typeNameInput) {
@@ -56,12 +54,12 @@ function handleTypeChange() {
   priceNameInput.setAttribute('min', priceNameInputMinValue);
 }
 
-window.addEventListener('load', handleTypeChange);
+//window.addEventListener('load', handleTypeChange);
 typeNameInput.addEventListener('change', handleTypeChange);
 
 priceNameInput.addEventListener('keyup', (evt) => {
-  if (evt.target.value < priceNameInputMinValue || evt.target.value > MAX_PRICE_LENGTH) {
-    evt.target.setCustomValidity(`Цена должна быть от ${ priceNameInputMinValue } до ${ MAX_PRICE_LENGTH }`);
+  if (evt.target.value < priceNameInputMinValue || evt.target.value > priceNameInput.max) {
+    evt.target.setCustomValidity(`Цена должна быть от ${ priceNameInputMinValue } до ${ priceNameInput.max }`);
   } else {
     priceNameInput.setCustomValidity('');
   }
@@ -79,29 +77,18 @@ priceNameInput.addEventListener('keyup', (evt) => {
 const roomNumberSelect = document.getElementById('room_number');
 const guestsNumberSelect = document.getElementById('capacity');
 const guestsNumberOptions = guestsNumberSelect.querySelectorAll('option');
+const maxRooms = 100;
 
 function handleRoomsChange() {
   const currentValue = Number(roomNumberSelect.value);
-  if (currentValue === 100) {
-    guestsNumberOptions.forEach((option) => {
-      if (Number(option.value) < currentValue) {
-        option.disabled = true;
-        option.selected = false;
-      } else {
-        option.disabled = false;
-        option.selected = true;
-      }
-    });
-    return true;
-  }
 
   guestsNumberOptions.forEach((option) => {
-    if (Number(option.value) > currentValue) {
-      option.disabled = true;
-      option.selected = false;
+    if (currentValue === maxRooms) {
+      option.disabled = Number(option.value) < currentValue;
+      option.selected = !Number(option.value) < currentValue;
     } else {
-      option.disabled = false;
-      option.selected = true;
+      option.disabled = Number(option.value) > currentValue;
+      option.selected = !Number(option.value) > currentValue;
     }
   });
 }
