@@ -95,3 +95,20 @@ function handleRoomsChange() {
 
 window.addEventListener('load', handleRoomsChange);
 roomNumberSelect.addEventListener('change', handleRoomsChange);
+
+//время заезда синхронизированно с временем выезда и наоборот
+const timeInRoom = document.getElementById('timein');
+const timeOutRoom = document.getElementById('timeout');
+const timeInRoomOptions = timeInRoom.querySelectorAll('option');
+const timeOutRoomOptions = timeOutRoom.querySelectorAll('option');
+
+function arrivalTimeInOut(elementValue, roomOptions) {
+  roomOptions.forEach((optionTime) => {
+    optionTime.selected = elementValue === optionTime.value;
+    // if (elementValue === optionTime.value) {
+    //   optionTime.selected = true;
+    // }
+  });
+}
+timeInRoom.addEventListener('change', () => { arrivalTimeInOut(timeInRoom.value, timeOutRoomOptions);});
+timeOutRoom.addEventListener('change', () => { arrivalTimeInOut(timeOutRoom.value, timeInRoomOptions);});
