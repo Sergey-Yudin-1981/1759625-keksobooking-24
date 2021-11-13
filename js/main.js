@@ -4,7 +4,7 @@ import {disableForm} from './action-on-off.js';
 
 const note = createHotelNumber(10);
 
-console.log(note);
+//console.log(note);
 //console.log(note[1].location.lat);
 
 //вывод данных по объявлению (попап на карте)
