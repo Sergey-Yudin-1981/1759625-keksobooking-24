@@ -4,11 +4,82 @@ import {disableForm} from './action-on-off.js';
 
 const note = createHotelNumber(10);
 
-//console.log(createHotelNumber(10));
+console.log(note);
+//console.log(note[1].location.lat);
 
-const cardItem = fillHotelElement(note[3], '#card');
-document.getElementById('map-canvas').append(cardItem);
+//вывод данных по объявлению (попап на карте)
+// const cardItem = fillHotelElement(note[3], '#card');
+// document.getElementById('map-canvas').append(cardItem);
 
+//подключениме карты
+let coordinatesLat = 35.68172;
+let coordinatesLng = 139.75392;
+const map = L.map('map-canvas');
+map.setView({
+  lat: coordinatesLat,
+  lng: coordinatesLng,
+}, 10);
+//подключаем картографический сервис (для отображения карты)
+L.tileLayer(
+  'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  },
+).addTo(map);
+//подключаем свой маркер
+const redIcon = L.icon({
+  iconUrl: 'img/main-pin.svg',
+  iconSize: [52, 52],
+  iconAnchor: [26, 52],
+});
+const blueIcon = L.icon({
+  iconUrl: 'img/pin.svg',
+  iconSize: [40, 40],
+  iconAnchor: [20, 40],
+});
+
+const coordinatesInput = document.getElementById('address');
+//добавляем маркер на карту
+const markerRed = L.marker(
+  {
+    lat: coordinatesLat,
+    lng: coordinatesLng,
+  },
+  {
+    draggable: true,//перетакскивание маркера
+    icon: redIcon,
+  },
+);
+markerRed.addTo(map);
+
+coordinatesInput.value = `${coordinatesLat}, ${coordinatesLng}`;
+//отображение координат при перетаскивании маркера
+markerRed.on('moveend', (evt) => {
+  const coordinates = evt.target.getLatLng();
+  coordinatesLat = coordinates.lat.toFixed(5);
+  coordinatesLng = coordinates.lng.toFixed(5);
+  //Выводим координаты в поле ввода адреса
+  coordinatesInput.value = `${coordinatesLat}, ${coordinatesLng}`;
+});
+//отображаем несколько меток синиго цвета
+for (let i=0; i < note.length; i ++) {
+  const lat = note[i].location.lat;
+  const lng = note[i].location.lng;
+  const markerBlue = L.marker(
+    {
+      lat,
+      lng,
+    },
+    {
+      icon: blueIcon,
+    },
+  );
+  markerBlue
+    .addTo(map)
+    .bindPopup(fillHotelElement(note[i], '#card'));
+}
+
+//активное-неактивное состояние ввода данных
 const data = ['.ad-form', '.map__filters'];
 disableForm(data, true);
 disableForm(data, false);
