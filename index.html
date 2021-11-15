@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <link rel="stylesheet" href="css/normalize.css">
   <link rel="stylesheet" href="css/style.css">
-  //стиль карты
+  <!-- стиль карты -->
   <link rel="stylesheet" href="leaflet\leaflet.css">
   <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
   <title>Кексобукинг</title>
@@ -231,8 +231,16 @@
       <button type="button" class="error__button">Попробовать снова</button>
     </div>
   </template>
+
+  <!-- Сообщение об ошибке соединения с сервером -->
+  <template id="serverError">
+    <div class="error">
+      <p class="error__message">Ошибка соединения с сервером</p>
+    </div>
+  </template>
+
 <script src="js/main.js" type="module"></script>
-//подключение карты
+<!-- подключение карты -->
 <script src="leaflet\leaflet.js"></script>
 </body>
 </html>
