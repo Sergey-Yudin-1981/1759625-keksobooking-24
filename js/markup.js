@@ -27,7 +27,8 @@ function fillHotelElement(product, templateId) {
   if (!template) {
     return false;
   }
-  const clonedContent = template.content.querySelector('.popup').cloneNode(true); //клонируем содержимое template (вложения)
+  //клонируем содержимое template (вложения)
+  const clonedContent = template.content.querySelector('.popup').cloneNode(true);
 
   // Аватар
   const avatarSrc = product.author.avatar;
