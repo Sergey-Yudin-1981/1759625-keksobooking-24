@@ -12,8 +12,8 @@ const note = createHotelNumber(10);
 // document.getElementById('map-canvas').append(cardItem);
 
 //подключениме карты
-let coordinatesLat = 35.68172;
-let coordinatesLng = 139.75392;
+const coordinatesLat = 35.68172;
+const coordinatesLng = 139.75392;
 const map = L.map('map-canvas');
 map.setView({
   lat: coordinatesLat,
@@ -54,12 +54,12 @@ markerRed.addTo(map);
 
 coordinatesInput.value = `${coordinatesLat}, ${coordinatesLng}`;
 //отображение координат при перетаскивании маркера
-markerRed.on('moveend', (evt) => {
+markerRed.on('move', (evt) => {
   const coordinates = evt.target.getLatLng();
-  coordinatesLat = coordinates.lat.toFixed(5);
-  coordinatesLng = coordinates.lng.toFixed(5);
+  const currentLat = coordinates.lat.toFixed(5);
+  const currentLng = coordinates.lng.toFixed(5);
   //Выводим координаты в поле ввода адреса
-  coordinatesInput.value = `${coordinatesLat}, ${coordinatesLng}`;
+  coordinatesInput.value = `${currentLat}, ${currentLng}`;
 });
 //отображаем несколько меток синиго цвета
 for (let i=0; i < note.length; i ++) {
