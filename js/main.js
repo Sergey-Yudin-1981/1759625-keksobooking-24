@@ -1,7 +1,8 @@
 //import {createHotelNumber} from './data.js';
-import {fillHotelElement} from './markup.js';
+//import {fillHotelElement} from './markup.js';
 import {disableForm} from './action-on-off.js';
 import {activatePopup} from './popup.js';
+import {loadMap} from './blueMarkerObject.js';
 
 //const note = createHotelNumber(10);
 
@@ -16,6 +17,23 @@ import {activatePopup} from './popup.js';
 const COORDINATES_LAT = 35.68172;
 const COORDINATES_LNG = 139.75392;
 const map = L.map('map-canvas');
+//подключаем свой маркер
+const redIcon = L.icon({
+  iconUrl: 'img/main-pin.svg',
+  iconSize: [52, 52],
+  iconAnchor: [26, 52],
+});
+// const blueIcon = L.icon({
+//   iconUrl: 'img/pin.svg',
+//   iconSize: [40, 40],
+//   iconAnchor: [20, 40],
+// });
+
+//получаем данные с сервера при загрузке карты
+map.on('load', () => {
+  loadMap(map);
+});
+
 map.setView({
   lat: COORDINATES_LAT,
   lng: COORDINATES_LNG,
@@ -27,17 +45,6 @@ L.tileLayer(
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
   },
 ).addTo(map);
-//подключаем свой маркер
-const redIcon = L.icon({
-  iconUrl: 'img/main-pin.svg',
-  iconSize: [52, 52],
-  iconAnchor: [26, 52],
-});
-const blueIcon = L.icon({
-  iconUrl: 'img/pin.svg',
-  iconSize: [40, 40],
-  iconAnchor: [20, 40],
-});
 
 const coordinatesInput = document.getElementById('address');
 //добавляем маркер на карту
@@ -187,44 +194,46 @@ timeOutRoom.addEventListener('change', () => { arrivalTimeInOut(timeOutRoom.valu
 
 
 //получаем данные с сервера
-map.whenReady(() => {
-  fetch('https://24.javascript.pages.academy/keksobooking/data',
-    {
-      method: 'GET',
-      credentials: 'same-origin',
-    },
-  )
-    .then((response) => {
-      if (response.ok) {
-        return response.json();
-      }
-      throw new Error('Сервер не отвечает, повторите попытку позднее.');
-    })
-    .then((dataServer) => {
-      //отображаем синие метки на карте
-      for (let i=0; i < dataServer.length; i ++) {
-        const lat = dataServer[i].location.lat;
-        const lng = dataServer[i].location.lng;
-        const markerBlue = L.marker(
-          {
-            lat,
-            lng,
-          },
-          {
-            icon: blueIcon,
-          },
-        );
-        markerBlue
-          .addTo(map)
-          .bindPopup(fillHotelElement(dataServer[i], '#card'));
-      }
-      disableForm(['.map__filters'], false);
-    })
-    .catch(() => {
-      activatePopup('serverError');
-      disableForm(['.map__filters'], true);
-    });
-});
+//map.whenReady(() => {
+// map.on('load', () => {
+//   console.log('загрузилось');
+//   fetch('https://24.javascript.pages.academy/keksobooking/data',
+//     {
+//       method: 'GET',
+//       credentials: 'same-origin',
+//     },
+//   )
+//     .then((response) => {
+//       if (response.ok) {
+//         return response.json();
+//       }
+//       throw new Error('Сервер не отвечает, повторите попытку позднее.');
+//     })
+//     .then((dataServer) => {
+//       //отображаем синие метки на карте
+//       for (let i=0; i < dataServer.length; i ++) {
+//         const lat = dataServer[i].location.lat;
+//         const lng = dataServer[i].location.lng;
+//         const markerBlue = L.marker(
+//           {
+//             lat,
+//             lng,
+//           },
+//           {
+//             icon: blueIcon,
+//           },
+//         );
+//         markerBlue
+//           .addTo(map)
+//           .bindPopup(fillHotelElement(dataServer[i], '#card'));
+//       }
+//       disableForm(['.map__filters'], false);
+//     })
+//     .catch(() => {
+//       activatePopup('serverError');
+//       disableForm(['.map__filters'], true);
+//     });
+// });
 
 function resetForm() {
   document.querySelector('.ad-form').reset();
@@ -270,3 +279,12 @@ formNode.addEventListener('submit', (evt) => {
       activatePopup('error');
     });
 });
+//фильтрация по типу помещения
+const typeHouse = document.getElementById('housing-type');
+
+function typeHouseChange() {
+  //console.log(typeHouse.value);
+
+}
+
+typeHouse.addEventListener('change', typeHouseChange);

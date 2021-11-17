@@ -37,7 +37,6 @@
 //   document.getElementById('serverErrorShow').remove();
 // }
 
-
 function activatePopup(nodeId) {
   if (!nodeId) {
     return false;
