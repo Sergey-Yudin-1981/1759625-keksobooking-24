@@ -1,8 +1,9 @@
 //import {createHotelNumber} from './data.js';
-//import {fillHotelElement} from './markup.js';
+import {fillHotelElement} from './markup.js';
 import {disableForm} from './action-on-off.js';
 import {activatePopup} from './popup.js';
-import {loadMap} from './blueMarkerObject.js';
+//import {loadMap} from './blueMarkerObject.js';
+import {fetchedData} from './fetchHotelsData.js';
 
 //const note = createHotelNumber(10);
 
@@ -29,9 +30,63 @@ const redIcon = L.icon({
 //   iconAnchor: [20, 40],
 // });
 
+async function getHotelsData() {
+  try {
+    const response = await fetchedData;
+    const responseBody = await response.json();
+    return responseBody;
+  } catch (error) {
+    activatePopup('serverError');
+    disableForm(['.map__filters'], true);
+  }
+}
+
+let blueBaloons = [];
+
+function showBaloon(dataToShow, mapInstance) {
+  const baloon = L.marker(
+    {
+      lat: dataToShow.location.lat,
+      lng: dataToShow.location.lng,
+    },
+    {
+      icon: L.icon({
+        iconUrl: 'img/pin.svg',
+        iconSize: [40, 40],
+        iconAnchor: [20, 40],
+      }),
+    },
+  )
+    .addTo(mapInstance)
+    .bindPopup(fillHotelElement(dataToShow, '#card'));
+  blueBaloons.push(baloon);
+}
+
+function removeBaloons() {
+  for (const baloon of blueBaloons) {
+    baloon.remove();
+  }
+  blueBaloons = [];
+}
+
+let hotelsData = {};
+
+async function renderBaloons() {
+  hotelsData = await getHotelsData();
+  if (!hotelsData) {
+    return false;
+  }
+  const slicedHotelsArr = hotelsData.slice(0, 10);
+  slicedHotelsArr.forEach((el) => {
+    showBaloon(el, map);
+  });
+  disableForm(['.map__filters'], false);
+}
+
 //получаем данные с сервера при загрузке карты
 map.on('load', () => {
-  loadMap(map);
+  //loadMap(map);
+  renderBaloons();
 });
 
 map.setView({
@@ -86,6 +141,80 @@ markerRed.on('move', (evt) => {
 //     .addTo(map)
 //     .bindPopup(fillHotelElement(note[i], '#card'));
 // }
+
+// фильтрация
+// стартовое состояние фильтрация
+const filterValues = {
+  type: 'any',
+  price: 'any',
+  rooms: 'any',
+  guests: 'any',
+  features: [],
+};
+
+function updateFilterValues () {
+  const mapWrapper = document.querySelector('.map__filters');
+
+  filterValues.type = mapWrapper.querySelector('#housing-type').value;
+  filterValues.price = mapWrapper.querySelector('#housing-price').value;
+  filterValues.rooms = mapWrapper.querySelector('#housing-rooms').value;
+  filterValues.guests = mapWrapper.querySelector('#housing-guests').value;
+
+  filterValues.features = [...mapWrapper.querySelectorAll('.map__features input:checked')]
+    .map((el) => el.getAttribute('value'));
+
+  const filterType = hotelsData.filter(({offer}) => filterValues.type === 'any' || offer.type === filterValues.type);
+
+  const filterPrice = filterType.filter(({offer}) => {
+    if (filterValues.price === 'any') {
+      return true;
+    }
+    if (filterValues.price === 'low') {
+      return offer.price < 10000;
+    }
+    if (filterValues.price === 'middle') {
+      return (offer.price >= 10000) && (offer.price <= 50000);
+    }
+    if (filterValues.price === 'high') {
+      return offer.price > 50000;
+    }
+    return false;
+  });
+  const filterRooms = filterPrice.filter(({offer}) => {
+    if (filterValues.rooms === 'any') {
+      return true;
+    }
+    return offer.rooms === Number(filterValues.rooms);
+  });
+  const filterGuest = filterRooms.filter(({offer}) => {
+    if (filterValues.guests === 'any') {
+      return true;
+    }
+    return offer.guests === Number(filterValues.guests);
+  });
+  const filterFeatures = filterGuest.filter(({offer}) => {
+    if (filterValues.features.length === 0) {
+      return true;
+    }
+    for (const feature of filterValues.features) {
+      if (!offer.features || !offer.features.includes(feature)) {
+        return false;
+      }
+    }
+    return true;
+  });
+  const result = filterFeatures.slice(0, 10);
+  removeBaloons();
+  for (const item of result) {
+    showBaloon(item, map);
+  }
+}
+
+(function() {
+  for (const input of document.querySelectorAll('.map__filters select, .map__filters input')) {
+    input.addEventListener('change', updateFilterValues);
+  }
+})();
 
 //активное-неактивное состояние ввода данных
 const data = ['.ad-form', '.map__filters'];
@@ -249,7 +378,8 @@ function resetForm() {
     lng: COORDINATES_LNG,
   });
 
-  document.querySelector('.leaflet-popup-close-button').click();
+  document.querySelector('.leaflet-popup-close-button') && document.querySelector('.leaflet-popup-close-button').click();
+  updateFilterValues();
 }
 
 const formNode = document.querySelector('.ad-form');
