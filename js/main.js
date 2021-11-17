@@ -1,10 +1,12 @@
-import {createHotelNumber} from './data.js';
-import {fillHotelElement} from './markup.js';
+//import {createHotelNumber} from './data.js';
+//import {fillHotelElement} from './markup.js';
 import {disableForm} from './action-on-off.js';
+import {activatePopup} from './popup.js';
+import {loadMap} from './blueMarkerObject.js';
 
-const note = createHotelNumber(10);
+//const note = createHotelNumber(10);
 
-//console.log(note);
+//console.log(wizards);
 //console.log(note[1].location.lat);
 
 //вывод данных по объявлению (попап на карте)
@@ -12,12 +14,29 @@ const note = createHotelNumber(10);
 // document.getElementById('map-canvas').append(cardItem);
 
 //подключениме карты
-const coordinatesLat = 35.68172;
-const coordinatesLng = 139.75392;
+const COORDINATES_LAT = 35.68172;
+const COORDINATES_LNG = 139.75392;
 const map = L.map('map-canvas');
+//подключаем свой маркер
+const redIcon = L.icon({
+  iconUrl: 'img/main-pin.svg',
+  iconSize: [52, 52],
+  iconAnchor: [26, 52],
+});
+// const blueIcon = L.icon({
+//   iconUrl: 'img/pin.svg',
+//   iconSize: [40, 40],
+//   iconAnchor: [20, 40],
+// });
+
+//получаем данные с сервера при загрузке карты
+map.on('load', () => {
+  loadMap(map);
+});
+
 map.setView({
-  lat: coordinatesLat,
-  lng: coordinatesLng,
+  lat: COORDINATES_LAT,
+  lng: COORDINATES_LNG,
 }, 10);
 //подключаем картографический сервис (для отображения карты)
 L.tileLayer(
@@ -26,24 +45,13 @@ L.tileLayer(
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
   },
 ).addTo(map);
-//подключаем свой маркер
-const redIcon = L.icon({
-  iconUrl: 'img/main-pin.svg',
-  iconSize: [52, 52],
-  iconAnchor: [26, 52],
-});
-const blueIcon = L.icon({
-  iconUrl: 'img/pin.svg',
-  iconSize: [40, 40],
-  iconAnchor: [20, 40],
-});
 
 const coordinatesInput = document.getElementById('address');
 //добавляем маркер на карту
 const markerRed = L.marker(
   {
-    lat: coordinatesLat,
-    lng: coordinatesLng,
+    lat: COORDINATES_LAT,
+    lng: COORDINATES_LNG,
   },
   {
     draggable: true,//перетакскивание маркера
@@ -52,7 +60,7 @@ const markerRed = L.marker(
 );
 markerRed.addTo(map);
 
-coordinatesInput.value = `${coordinatesLat}, ${coordinatesLng}`;
+coordinatesInput.value = `${COORDINATES_LAT}, ${COORDINATES_LNG}`;
 //отображение координат при перетаскивании маркера
 markerRed.on('move', (evt) => {
   const coordinates = evt.target.getLatLng();
@@ -62,27 +70,29 @@ markerRed.on('move', (evt) => {
   coordinatesInput.value = `${currentLat}, ${currentLng}`;
 });
 //отображаем несколько меток синиго цвета
-for (let i=0; i < note.length; i ++) {
-  const lat = note[i].location.lat;
-  const lng = note[i].location.lng;
-  const markerBlue = L.marker(
-    {
-      lat,
-      lng,
-    },
-    {
-      icon: blueIcon,
-    },
-  );
-  markerBlue
-    .addTo(map)
-    .bindPopup(fillHotelElement(note[i], '#card'));
-}
+// for (let i=0; i < note.length; i ++) {
+//   const lat = note[i].location.lat;
+//   const lng = note[i].location.lng;
+//   const markerBlue = L.marker(
+//     {
+//       lat,
+//       lng,
+//     },
+//     {
+//       icon: blueIcon,
+//     },
+//   );
+//   markerBlue
+//     .addTo(map)
+//     .bindPopup(fillHotelElement(note[i], '#card'));
+// }
 
 //активное-неактивное состояние ввода данных
 const data = ['.ad-form', '.map__filters'];
 disableForm(data, true);
-disableForm(data, false);
+map.whenReady(() => {
+  disableForm(['.ad-form'], false);
+});
 
 //Проверка ввода заголовка объявления
 const MIN_HEADING_LENGTH = 30;
@@ -125,11 +135,10 @@ function handleTypeChange() {
   priceNameInput.setAttribute('min', priceNameInputMinValue);
 }
 
-//window.addEventListener('load', handleTypeChange);
 typeNameInput.addEventListener('change', handleTypeChange);
 
 priceNameInput.addEventListener('keyup', (evt) => {
-  if (evt.target.value < priceNameInputMinValue || evt.target.value > priceNameInput.max) {
+  if (Number(evt.target.value) < priceNameInputMinValue || Number(evt.target.value) > priceNameInput.max) {
     evt.target.setCustomValidity(`Цена должна быть от ${ priceNameInputMinValue } до ${ priceNameInput.max }`);
   } else {
     priceNameInput.setCustomValidity('');
@@ -176,10 +185,106 @@ const timeOutRoomOptions = timeOutRoom.querySelectorAll('option');
 function arrivalTimeInOut(elementValue, roomOptions) {
   roomOptions.forEach((optionTime) => {
     optionTime.selected = elementValue === optionTime.value;
-    // if (elementValue === optionTime.value) {
-    //   optionTime.selected = true;
-    // }
   });
 }
 timeInRoom.addEventListener('change', () => { arrivalTimeInOut(timeInRoom.value, timeOutRoomOptions);});
 timeOutRoom.addEventListener('change', () => { arrivalTimeInOut(timeOutRoom.value, timeInRoomOptions);});
+
+//проверка запроса на сервера
+
+
+//получаем данные с сервера
+//map.whenReady(() => {
+// map.on('load', () => {
+//   console.log('загрузилось');
+//   fetch('https://24.javascript.pages.academy/keksobooking/data',
+//     {
+//       method: 'GET',
+//       credentials: 'same-origin',
+//     },
+//   )
+//     .then((response) => {
+//       if (response.ok) {
+//         return response.json();
+//       }
+//       throw new Error('Сервер не отвечает, повторите попытку позднее.');
+//     })
+//     .then((dataServer) => {
+//       //отображаем синие метки на карте
+//       for (let i=0; i < dataServer.length; i ++) {
+//         const lat = dataServer[i].location.lat;
+//         const lng = dataServer[i].location.lng;
+//         const markerBlue = L.marker(
+//           {
+//             lat,
+//             lng,
+//           },
+//           {
+//             icon: blueIcon,
+//           },
+//         );
+//         markerBlue
+//           .addTo(map)
+//           .bindPopup(fillHotelElement(dataServer[i], '#card'));
+//       }
+//       disableForm(['.map__filters'], false);
+//     })
+//     .catch(() => {
+//       activatePopup('serverError');
+//       disableForm(['.map__filters'], true);
+//     });
+// });
+
+function resetForm() {
+  document.querySelector('.ad-form').reset();
+  document.querySelector('.map__filters').reset();
+
+  map.setView({
+    lat: COORDINATES_LAT,
+    lng: COORDINATES_LNG,
+  }, 10);
+
+  markerRed.setLatLng({
+    lat: COORDINATES_LAT,
+    lng: COORDINATES_LNG,
+  });
+
+  document.querySelector('.leaflet-popup-close-button').click();
+}
+
+const formNode = document.querySelector('.ad-form');
+
+formNode.querySelector('.ad-form__reset').addEventListener('click', (evt) => {
+  evt.preventDefault();
+  resetForm();
+});
+
+formNode.addEventListener('submit', (evt) => {
+  evt.preventDefault();
+  const formData = new FormData(formNode);
+  fetch(formNode.getAttribute('action'),
+    {
+      method: 'POST',
+      body: formData,
+      credentials: 'same-origin',
+    })
+    .then((response) => {
+      if (response.ok) {
+        activatePopup('success');
+        resetForm();
+      }
+      throw new Error('Ошибка отправки данных');
+    })
+    .catch(() => {
+      activatePopup('error');
+    });
+});
+//фильтрация по типу помещения
+const typeHouse = document.getElementById('housing-type');
+
+function typeHouseChange() {
+  //console.log(typeHouse.value);
+
+}
+
+typeHouse.addEventListener('change', typeHouseChange);

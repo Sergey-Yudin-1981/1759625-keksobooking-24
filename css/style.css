@@ -783,7 +783,8 @@ fieldset {
   height: 35px;
 }
 
-.popup__close {
+.popup__close,
+.popup-message__close {
   position: absolute;
   bottom: 100%;
   right: 0;
@@ -796,19 +797,22 @@ fieldset {
   background: none;
 }
 
-.popup__close:active {
+.popup__close:active,
+.popup-message__close:active {
   -webkit-transform: translate(1px, 1px);
       -ms-transform: translate(1px, 1px);
           transform: translate(1px, 1px);
 }
 
-.popup__close:focus {
+.popup__close:focus,
+.popup-message__close:focus {
   outline: none;
   -webkit-box-shadow: 0 0 10px 3px #ff6547;
           box-shadow: 0 0 10px 3px #ff6547;
 }
 
-.popup__close::after {
+.popup__close::after,
+.popup-message__close::after {
   font-size: 50px;
   line-height: 40px;
 
