@@ -312,10 +312,3 @@ formNode.addEventListener('submit', (evt) => {
       activatePopup('error');
     });
 });
-const typeHouse = document.getElementById('housing-type');
-
-function typeHouseChange() {
-
-}
-
-typeHouse.addEventListener('change', typeHouseChange);
