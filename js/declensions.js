@@ -1,4 +1,4 @@
-function getNoun(number, one, two, five) {
+const getNoun = (number, one, two, five) => {
   let n = Math.abs(number);
   n %= 100;
   if (n >= 5 && n <= 20) {
@@ -12,6 +12,6 @@ function getNoun(number, one, two, five) {
     return two;
   }
   return five;
-}
+};
 
 export {getNoun};

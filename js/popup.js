@@ -1,4 +1,5 @@
-function activatePopup(nodeId) {
+const keyEsc = 'Escape';
+const activatePopup = (nodeId) => {
   if (!nodeId) {
     return false;
   }
@@ -9,18 +10,19 @@ function activatePopup(nodeId) {
   function closePopup() {
     document.getElementById('activePopup').remove();
     document.removeEventListener('click', closePopup);
+    document.removeEventListener('keydown', handleEscBtn);
   }
-
   function handleEscBtn(evt) {
-    if (evt.key === 'Escape') {
+    if (evt.key === keyEsc) {
       closePopup();
       document.removeEventListener('keydown', handleEscBtn);
+      document.removeEventListener('click', closePopup);
     }
   }
 
   document.addEventListener('click', closePopup);
   document.addEventListener('keydown', handleEscBtn);
 
-}
+};
 
 export {activatePopup};
