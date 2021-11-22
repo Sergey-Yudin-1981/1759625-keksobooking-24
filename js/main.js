@@ -2,18 +2,14 @@ import {fillHotelElement} from './markup.js';
 import {disableForm} from './action-on-off.js';
 import {activatePopup} from './popup.js';
 import {fetchedData} from './fetchHotelsData.js';
+import {debounce} from './utils/debounce.js';
 
-const PRICEBUNGALOW = 0;
-const PRICEFLAT = 1000;
-const PRICEHOTEL = 3000;
-const PRICEHOUSE = 5000;
-const PRICEPALASE = 10000;
 const typeHouses = {
-  bungalow: 'bungalow',
-  flat: 'flat',
-  hotel: 'hotel',
-  house: 'house',
-  palace: 'palace',
+  bungalow: 0,
+  flat: 1000,
+  hotel: 3000,
+  house: 5000,
+  palace: 10000,
 };
 const priceHouses = {
   any: 'any',
@@ -21,25 +17,23 @@ const priceHouses = {
   low: 'low',
   high: 'high',
 };
-const roomsHouses = 'any';
-const guestHouses = 'any';
-const filterValuesGeneral = 'any';
-const NUMBERELEMENTS = 10;
-const MIDDLEPRICE = 50000;
-const LOWPRICE = 10000;
+const DEFAULT_VALUE = 'any';
+const NUMBER_ELEMENTS = 10;
+const MIDDLE_PRICE = 50000;
+const LOW_PRICE = 10000;
 const COORDINATES_LAT = 35.68172;
 const COORDINATES_LNG = 139.75392;
 const coordinatesInputNode = document.getElementById('address');
 const map = L.map('map-canvas');
-const SIZEREDICON = 52;
-const REDICONCENTER = 26;
+const SIZE_RED_ICON = 52;
+const RED_ICON_CENTER = 26;
 const redIcon = L.icon({
   iconUrl: 'img/main-pin.svg',
-  iconSize: [SIZEREDICON, SIZEREDICON],
-  iconAnchor: [REDICONCENTER, SIZEREDICON],
+  iconSize: [SIZE_RED_ICON, SIZE_RED_ICON],
+  iconAnchor: [RED_ICON_CENTER, SIZE_RED_ICON],
 });
-const SIZEBLUEICON = 40;
-const BLUEICONCENTER = 20;
+const SIZE_BLUE_ICON = 40;
+const BLUE_ICON_CENTER = 20;
 const filterValues = {
   type: 'any',
   price: 'any',
@@ -63,7 +57,7 @@ const priceMinTable = {
 const roomNumberSelectNode = document.getElementById('room_number');
 const guestsNumberSelectNode = document.getElementById('capacity');
 const guestsNumberOptions = guestsNumberSelectNode.querySelectorAll('option');
-const MAXROOMS = 100;
+const MAX_ROOMS = 100;
 const timeInRoomNode = document.getElementById('timein');
 const timeOutRoomNode = document.getElementById('timeout');
 const timeInRoomOptions = timeInRoomNode.querySelectorAll('option');
@@ -103,8 +97,8 @@ const showBaloon = (dataToShow, mapInstance) => {
     {
       icon: L.icon({
         iconUrl: 'img/pin.svg',
-        iconSize: [SIZEBLUEICON, SIZEBLUEICON],
-        iconAnchor: [BLUEICONCENTER, SIZEBLUEICON],
+        iconSize: [SIZE_BLUE_ICON, SIZE_BLUE_ICON],
+        iconAnchor: [BLUE_ICON_CENTER, SIZE_BLUE_ICON],
       }),
     },
   )
@@ -127,7 +121,7 @@ const renderBaloons = async () => {
   if (!hotelsData) {
     return false;
   }
-  const slicedHotelsArr = hotelsData.slice(0, NUMBERELEMENTS);
+  const slicedHotelsArr = hotelsData.slice(0, NUMBER_ELEMENTS);
   slicedHotelsArr.forEach((el) => {
     showBaloon(el, map);
   });
@@ -141,7 +135,7 @@ map.on('load', () => {
 map.setView({
   lat: COORDINATES_LAT,
   lng: COORDINATES_LNG,
-}, NUMBERELEMENTS);
+}, NUMBER_ELEMENTS);
 
 L.tileLayer(
   'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -172,31 +166,31 @@ const updateFilterValues = () => {
   filterValues.features = [...mapWrapper.querySelectorAll('.map__features input:checked')]
     .map((el) => el.getAttribute('value'));
 
-  const filterType = hotelsData.filter(({offer}) => filterValues.type === filterValuesGeneral || offer.type === filterValues.type);
+  const filterType = hotelsData.filter(({offer}) => filterValues.type === DEFAULT_VALUE || offer.type === filterValues.type);
 
   const filterPrice = filterType.filter(({offer}) => {
     if (filterValues.price === priceHouses.any) {
       return true;
     }
     if (filterValues.price === priceHouses.low) {
-      return offer.price < LOWPRICE;
+      return offer.price < LOW_PRICE;
     }
     if (filterValues.price === priceHouses.middle) {
-      return (offer.price >= LOWPRICE) && (offer.price <= MIDDLEPRICE);
+      return (offer.price >= LOW_PRICE) && (offer.price <= MIDDLE_PRICE);
     }
     if (filterValues.price === priceHouses.high) {
-      return offer.price > MIDDLEPRICE;
+      return offer.price > MIDDLE_PRICE;
     }
     return false;
   });
   const filterRooms = filterPrice.filter(({offer}) => {
-    if (filterValues.rooms === roomsHouses) {
+    if (filterValues.rooms === DEFAULT_VALUE) {
       return true;
     }
     return offer.rooms === Number(filterValues.rooms);
   });
   const filterGuest = filterRooms.filter(({offer}) => {
-    if (filterValues.guests === guestHouses) {
+    if (filterValues.guests === DEFAULT_VALUE) {
       return true;
     }
     return offer.guests === Number(filterValues.guests);
@@ -212,19 +206,29 @@ const updateFilterValues = () => {
     }
     return true;
   });
-  const result = filterFeatures.slice(0, NUMBERELEMENTS);
+  return filterFeatures;
+};
+
+const renderFilterredBaloons = (baloonsArray) => {
   removeBaloons();
-  result.forEach((item) => {
+  baloonsArray.slice(0, NUMBER_ELEMENTS).forEach((item) => {
     showBaloon(item, map);
   });
 };
 
-(() => {
+const bindFiltersChange = (cb) => {
   const filterInputNodes = document.querySelectorAll('.map__filters select, .map__filters input');
   filterInputNodes.forEach((input) => {
-    input.addEventListener('change', updateFilterValues);
+    input.addEventListener('change', () => {
+      const filteredData = updateFilterValues();
+      cb(filteredData);
+    });
   });
-})();
+};
+
+bindFiltersChange(debounce((filteredData) => {
+  renderFilterredBaloons(filteredData);
+}));
 
 disableForm(data, true);
 map.whenReady(() => {
@@ -270,7 +274,7 @@ const handleRoomsChange = () => {
   const currentValue = Number(roomNumberSelectNode.value);
 
   guestsNumberOptions.forEach((option) => {
-    if (currentValue === MAXROOMS) {
+    if (currentValue === MAX_ROOMS) {
       option.disabled = Number(option.value) < currentValue;
       option.selected = !Number(option.value) < currentValue;
     } else {
@@ -291,22 +295,7 @@ const changeRoomValue = () => {
 window.addEventListener('load', loadDefaultRooms);
 
 const changePrice =  () => {
-  switch (typeNameInputNode.value) {
-    case typeHouses.bungalow:
-      priceNameInputNode.placeholder = PRICEBUNGALOW;
-      break;
-    case typeHouses.flat:
-      priceNameInputNode.placeholder = PRICEFLAT;
-      break;
-    case typeHouses.hotel:
-      priceNameInputNode.placeholder = PRICEHOTEL;
-      break;
-    case typeHouses.house:
-      priceNameInputNode.placeholder = PRICEHOUSE;
-      break;
-    default:
-      priceNameInputNode.placeholder = PRICEPALASE;
-  }
+  priceNameInputNode.placeholder = typeHouses[typeNameInputNode.value];
 };
 typeNameInputNode.addEventListener('change', changePrice);
 
@@ -327,7 +316,7 @@ const resetForm = () => {
   map.setView({
     lat: COORDINATES_LAT,
     lng: COORDINATES_LNG,
-  }, NUMBERELEMENTS);
+  }, NUMBER_ELEMENTS);
 
   markerRed.setLatLng({
     lat: COORDINATES_LAT,
@@ -356,6 +345,7 @@ formNode.addEventListener('submit', (evt) => {
       if (response.ok) {
         activatePopup('success');
         resetForm();
+        return false;
       }
       throw new Error('Ошибка отправки данных');
     })
