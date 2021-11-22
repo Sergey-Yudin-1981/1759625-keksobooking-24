@@ -1,4 +1,4 @@
-function disableForm (classFormMap, block) {
+const disableForm = (classFormMap, block) => {
   for (let j = 0; j < classFormMap.length; j ++) {
     const objectForm = document.querySelector(classFormMap[j]);
     if (block) {
@@ -11,5 +11,5 @@ function disableForm (classFormMap, block) {
       elementForm[i].disabled = block; //добавление атрибута disabled элементу
     }
   }
-}
+};
 export {disableForm};

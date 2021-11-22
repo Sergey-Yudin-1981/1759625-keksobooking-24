@@ -3,85 +3,72 @@ import {disableForm} from './action-on-off.js';
 import {activatePopup} from './popup.js';
 import {fetchedData} from './fetchHotelsData.js';
 
+const PRICEBUNGALOW = 0;
+const PRICEFLAT = 1000;
+const PRICEHOTEL = 3000;
+const PRICEHOUSE = 5000;
+const PRICEPALASE = 10000;
+const typeHouses = {
+  bungalow: 'bungalow',
+  flat: 'flat',
+  hotel: 'hotel',
+  house: 'house',
+  palace: 'palace',
+};
+const priceHouses = {
+  any: 'any',
+  middle: 'middle',
+  low: 'low',
+  high: 'high',
+};
+const roomsHouses = 'any';
+const guestHouses = 'any';
+const filterValuesGeneral = 'any';
+const NUMBERELEMENTS = 10;
+const MIDDLEPRICE = 50000;
+const LOWPRICE = 10000;
 const COORDINATES_LAT = 35.68172;
 const COORDINATES_LNG = 139.75392;
+const coordinatesInputNode = document.getElementById('address');
 const map = L.map('map-canvas');
+const SIZEREDICON = 52;
+const REDICONCENTER = 26;
 const redIcon = L.icon({
   iconUrl: 'img/main-pin.svg',
-  iconSize: [52, 52],
-  iconAnchor: [26, 52],
+  iconSize: [SIZEREDICON, SIZEREDICON],
+  iconAnchor: [REDICONCENTER, SIZEREDICON],
 });
-
-async function getHotelsData() {
-  try {
-    const response = await fetchedData;
-    const responseBody = await response.json();
-    return responseBody;
-  } catch (error) {
-    activatePopup('serverError');
-    disableForm(['.map__filters'], true);
-  }
-}
-
-let blueBaloons = [];
-
-function showBaloon(dataToShow, mapInstance) {
-  const baloon = L.marker(
-    {
-      lat: dataToShow.location.lat,
-      lng: dataToShow.location.lng,
-    },
-    {
-      icon: L.icon({
-        iconUrl: 'img/pin.svg',
-        iconSize: [40, 40],
-        iconAnchor: [20, 40],
-      }),
-    },
-  )
-    .addTo(mapInstance)
-    .bindPopup(fillHotelElement(dataToShow, '#card'));
-  blueBaloons.push(baloon);
-}
-
-function removeBaloons() {
-  for (const baloon of blueBaloons) {
-    baloon.remove();
-  }
-  blueBaloons = [];
-}
-
-let hotelsData = {};
-
-async function renderBaloons() {
-  hotelsData = await getHotelsData();
-  if (!hotelsData) {
-    return false;
-  }
-  const slicedHotelsArr = hotelsData.slice(0, 10);
-  slicedHotelsArr.forEach((el) => {
-    showBaloon(el, map);
-  });
-  disableForm(['.map__filters'], false);
-}
-
-map.on('load', () => {
-  renderBaloons();
-});
-
-map.setView({
-  lat: COORDINATES_LAT,
-  lng: COORDINATES_LNG,
-}, 10);
-
-L.tileLayer(
-  'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-  {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-  },
-).addTo(map);
-
-const coordinatesInput = document.getElementById('address');
+const SIZEBLUEICON = 40;
+const BLUEICONCENTER = 20;
+const filterValues = {
+  type: 'any',
+  price: 'any',
+  rooms: 'any',
+  guests: 'any',
+  features: [],
+};
+const MIN_HEADING_LENGTH = 30;
+const MAX_HEADING_LENGTH = 100;
+const headingNameInputNode = document.getElementById('title');
+const data = ['.ad-form', '.map__filters'];
+const priceNameInputNode = document.getElementById('price');
+const typeNameInputNode = document.getElementById('type');
+const priceMinTable = {
+  bungalow: 0,
+  flat: 1000,
+  hotel: 3000,
+  house: 5000,
+  palace: 10000,
+};
+const roomNumberSelectNode = document.getElementById('room_number');
+const guestsNumberSelectNode = document.getElementById('capacity');
+const guestsNumberOptions = guestsNumberSelectNode.querySelectorAll('option');
+const MAXROOMS = 100;
+const timeInRoomNode = document.getElementById('timein');
+const timeOutRoomNode = document.getElementById('timeout');
+const timeInRoomOptions = timeInRoomNode.querySelectorAll('option');
+const timeOutRoomOptions = timeOutRoomNode.querySelectorAll('option');
+const formNode = document.querySelector('.ad-form');
 const markerRed = L.marker(
   {
     lat: COORDINATES_LAT,
@@ -92,26 +79,89 @@ const markerRed = L.marker(
     icon: redIcon,
   },
 );
+
+
+const getHotelsData = async () => {
+  try {
+    const response = await fetchedData;
+    const responseBody = await response.json();
+    return responseBody;
+  } catch (error) {
+    activatePopup('serverError');
+    disableForm(['.map__filters'], true);
+  }
+};
+
+let blueBaloons = [];
+
+const showBaloon = (dataToShow, mapInstance) => {
+  const baloon = L.marker(
+    {
+      lat: dataToShow.location.lat,
+      lng: dataToShow.location.lng,
+    },
+    {
+      icon: L.icon({
+        iconUrl: 'img/pin.svg',
+        iconSize: [SIZEBLUEICON, SIZEBLUEICON],
+        iconAnchor: [BLUEICONCENTER, SIZEBLUEICON],
+      }),
+    },
+  )
+    .addTo(mapInstance)
+    .bindPopup(fillHotelElement(dataToShow, '#card'));
+  blueBaloons.push(baloon);
+};
+
+const removeBaloons = () => {
+  blueBaloons.forEach((baloon) => {
+    baloon.remove();
+  });
+  blueBaloons = [];
+};
+
+let hotelsData = {};
+
+const renderBaloons = async () => {
+  hotelsData = await getHotelsData();
+  if (!hotelsData) {
+    return false;
+  }
+  const slicedHotelsArr = hotelsData.slice(0, NUMBERELEMENTS);
+  slicedHotelsArr.forEach((el) => {
+    showBaloon(el, map);
+  });
+  disableForm(['.map__filters'], false);
+};
+
+map.on('load', () => {
+  renderBaloons();
+});
+
+map.setView({
+  lat: COORDINATES_LAT,
+  lng: COORDINATES_LNG,
+}, NUMBERELEMENTS);
+
+L.tileLayer(
+  'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  },
+).addTo(map);
+
 markerRed.addTo(map);
 
-coordinatesInput.value = `${COORDINATES_LAT}, ${COORDINATES_LNG}`;
+coordinatesInputNode.value = `${COORDINATES_LAT}, ${COORDINATES_LNG}`;
 markerRed.on('move', (evt) => {
   const coordinates = evt.target.getLatLng();
   const currentLat = coordinates.lat.toFixed(5);
   const currentLng = coordinates.lng.toFixed(5);
   //Выводим координаты в поле ввода адреса
-  coordinatesInput.value = `${currentLat}, ${currentLng}`;
+  coordinatesInputNode.value = `${currentLat}, ${currentLng}`;
 });
 
-const filterValues = {
-  type: 'any',
-  price: 'any',
-  rooms: 'any',
-  guests: 'any',
-  features: [],
-};
-
-function updateFilterValues () {
+const updateFilterValues = () => {
   const mapWrapper = document.querySelector('.map__filters');
 
   filterValues.type = mapWrapper.querySelector('#housing-type').value;
@@ -122,31 +172,31 @@ function updateFilterValues () {
   filterValues.features = [...mapWrapper.querySelectorAll('.map__features input:checked')]
     .map((el) => el.getAttribute('value'));
 
-  const filterType = hotelsData.filter(({offer}) => filterValues.type === 'any' || offer.type === filterValues.type);
+  const filterType = hotelsData.filter(({offer}) => filterValues.type === filterValuesGeneral || offer.type === filterValues.type);
 
   const filterPrice = filterType.filter(({offer}) => {
-    if (filterValues.price === 'any') {
+    if (filterValues.price === priceHouses.any) {
       return true;
     }
-    if (filterValues.price === 'low') {
-      return offer.price < 10000;
+    if (filterValues.price === priceHouses.low) {
+      return offer.price < LOWPRICE;
     }
-    if (filterValues.price === 'middle') {
-      return (offer.price >= 10000) && (offer.price <= 50000);
+    if (filterValues.price === priceHouses.middle) {
+      return (offer.price >= LOWPRICE) && (offer.price <= MIDDLEPRICE);
     }
-    if (filterValues.price === 'high') {
-      return offer.price > 50000;
+    if (filterValues.price === priceHouses.high) {
+      return offer.price > MIDDLEPRICE;
     }
     return false;
   });
   const filterRooms = filterPrice.filter(({offer}) => {
-    if (filterValues.rooms === 'any') {
+    if (filterValues.rooms === roomsHouses) {
       return true;
     }
     return offer.rooms === Number(filterValues.rooms);
   });
   const filterGuest = filterRooms.filter(({offer}) => {
-    if (filterValues.guests === 'any') {
+    if (filterValues.guests === guestHouses) {
       return true;
     }
     return offer.guests === Number(filterValues.guests);
@@ -162,86 +212,65 @@ function updateFilterValues () {
     }
     return true;
   });
-  const result = filterFeatures.slice(0, 10);
+  const result = filterFeatures.slice(0, NUMBERELEMENTS);
   removeBaloons();
-  for (const item of result) {
+  result.forEach((item) => {
     showBaloon(item, map);
-  }
-}
+  });
+};
 
-(function() {
-  for (const input of document.querySelectorAll('.map__filters select, .map__filters input')) {
+(() => {
+  const filterInputNodes = document.querySelectorAll('.map__filters select, .map__filters input');
+  filterInputNodes.forEach((input) => {
     input.addEventListener('change', updateFilterValues);
-  }
+  });
 })();
 
-const data = ['.ad-form', '.map__filters'];
 disableForm(data, true);
 map.whenReady(() => {
   disableForm(['.ad-form'], false);
 });
 
-const MIN_HEADING_LENGTH = 30;
-const MAX_HEADING_LENGTH = 100;
-const headingNameInput = document.getElementById('title');
-
-headingNameInput.addEventListener('input', () => {
-  const valueLength = headingNameInput.value.length;
+headingNameInputNode.addEventListener('input', () => {
+  const valueLength = headingNameInputNode.value.length;
 
   if (valueLength < MIN_HEADING_LENGTH) {
-    headingNameInput.setCustomValidity(`Ещё ${  MIN_HEADING_LENGTH - valueLength } симв.`);
+    headingNameInputNode.setCustomValidity(`Ещё ${  MIN_HEADING_LENGTH - valueLength } симв.`);
   } else if (valueLength > MAX_HEADING_LENGTH) {
-    headingNameInput.setCustomValidity(`Удалить ${  valueLength - MAX_HEADING_LENGTH } симв. Максимальное количество ${ MAX_HEADING_LENGTH } симв.`);
+    headingNameInputNode.setCustomValidity(`Удалить ${  valueLength - MAX_HEADING_LENGTH } симв. Максимальное количество ${ MAX_HEADING_LENGTH } симв.`);
   } else {
-    headingNameInput.setCustomValidity('');
+    headingNameInputNode.setCustomValidity('');
   }
 
-  headingNameInput.reportValidity();
+  headingNameInputNode.reportValidity();
 });
 
-const priceNameInput = document.getElementById('price');
-const typeNameInput = document.getElementById('type');
+let priceNameInputMinValue = priceNameInputNode.min;
 
-const priceMinTable = {
-  bungalow: 0,
-  flat: 1000,
-  hotel: 3000,
-  house: 5000,
-  palace: 10000,
-};
-
-let priceNameInputMinValue = priceNameInput.min;
-
-function handleTypeChange() {
-  if (!priceNameInput || !typeNameInput) {
+const handleTypeChange = () => {
+  if (!priceNameInputNode || !typeNameInputNode) {
     return false;
   }
-  priceNameInputMinValue = priceMinTable[typeNameInput.value] ? priceMinTable[typeNameInput.value] : 0;
-  priceNameInput.setAttribute('min', priceNameInputMinValue);
-}
+  priceNameInputMinValue = priceMinTable[typeNameInputNode.value] ? priceMinTable[typeNameInputNode.value] : 0;
+  priceNameInputNode.setAttribute('min', priceNameInputMinValue);
+};
 
-typeNameInput.addEventListener('change', handleTypeChange);
+typeNameInputNode.addEventListener('change', handleTypeChange);
 
-priceNameInput.addEventListener('keyup', (evt) => {
-  if (Number(evt.target.value) < priceNameInputMinValue || Number(evt.target.value) > priceNameInput.max) {
-    evt.target.setCustomValidity(`Цена должна быть от ${ priceNameInputMinValue } до ${ priceNameInput.max }`);
+priceNameInputNode.addEventListener('keyup', (evt) => {
+  if (Number(evt.target.value) < priceNameInputMinValue || Number(evt.target.value) > priceNameInputNode.max) {
+    evt.target.setCustomValidity(`Цена должна быть от ${ priceNameInputMinValue } до ${ priceNameInputNode.max }`);
   } else {
-    priceNameInput.setCustomValidity('');
+    priceNameInputNode.setCustomValidity('');
   }
   evt.target.reportValidity();
 });
 
-
-const roomNumberSelect = document.getElementById('room_number');
-const guestsNumberSelect = document.getElementById('capacity');
-const guestsNumberOptions = guestsNumberSelect.querySelectorAll('option');
-const maxRooms = 100;
-
-function handleRoomsChange() {
-  const currentValue = Number(roomNumberSelect.value);
+const handleRoomsChange = () => {
+  const currentValue = Number(roomNumberSelectNode.value);
 
   guestsNumberOptions.forEach((option) => {
-    if (currentValue === maxRooms) {
+    if (currentValue === MAXROOMS) {
       option.disabled = Number(option.value) < currentValue;
       option.selected = !Number(option.value) < currentValue;
     } else {
@@ -249,32 +278,56 @@ function handleRoomsChange() {
       option.selected = !Number(option.value) > currentValue;
     }
   });
-}
+};
 
-window.addEventListener('load', handleRoomsChange);
-roomNumberSelect.addEventListener('change', handleRoomsChange);
+const loadDefaultRooms = () => {
+  handleRoomsChange();
+};
 
-const timeInRoom = document.getElementById('timein');
-const timeOutRoom = document.getElementById('timeout');
-const timeInRoomOptions = timeInRoom.querySelectorAll('option');
-const timeOutRoomOptions = timeOutRoom.querySelectorAll('option');
+const changeRoomValue = () => {
+  handleRoomsChange();
+};
 
-function arrivalTimeInOut(elementValue, roomOptions) {
+window.addEventListener('load', loadDefaultRooms);
+
+const changePrice =  () => {
+  switch (typeNameInputNode.value) {
+    case typeHouses.bungalow:
+      priceNameInputNode.placeholder = PRICEBUNGALOW;
+      break;
+    case typeHouses.flat:
+      priceNameInputNode.placeholder = PRICEFLAT;
+      break;
+    case typeHouses.hotel:
+      priceNameInputNode.placeholder = PRICEHOTEL;
+      break;
+    case typeHouses.house:
+      priceNameInputNode.placeholder = PRICEHOUSE;
+      break;
+    default:
+      priceNameInputNode.placeholder = PRICEPALASE;
+  }
+};
+typeNameInputNode.addEventListener('change', changePrice);
+
+roomNumberSelectNode.addEventListener('change', changeRoomValue);
+
+const arrivalTimeInOut = (elementValue, roomOptions) => {
   roomOptions.forEach((optionTime) => {
     optionTime.selected = elementValue === optionTime.value;
   });
-}
-timeInRoom.addEventListener('change', () => { arrivalTimeInOut(timeInRoom.value, timeOutRoomOptions);});
-timeOutRoom.addEventListener('change', () => { arrivalTimeInOut(timeOutRoom.value, timeInRoomOptions);});
+};
+timeInRoomNode.addEventListener('change', () => { arrivalTimeInOut(timeInRoomNode.value, timeOutRoomOptions);});
+timeOutRoomNode.addEventListener('change', () => { arrivalTimeInOut(timeOutRoomNode.value, timeInRoomOptions);});
 
-function resetForm() {
+const resetForm = () => {
   document.querySelector('.ad-form').reset();
   document.querySelector('.map__filters').reset();
 
   map.setView({
     lat: COORDINATES_LAT,
     lng: COORDINATES_LNG,
-  }, 10);
+  }, NUMBERELEMENTS);
 
   markerRed.setLatLng({
     lat: COORDINATES_LAT,
@@ -283,9 +336,7 @@ function resetForm() {
 
   document.querySelector('.leaflet-popup-close-button') && document.querySelector('.leaflet-popup-close-button').click();
   updateFilterValues();
-}
-
-const formNode = document.querySelector('.ad-form');
+};
 
 formNode.querySelector('.ad-form__reset').addEventListener('click', (evt) => {
   evt.preventDefault();
